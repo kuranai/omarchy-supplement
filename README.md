@@ -7,12 +7,19 @@ Run these after the base Omarchy install has completed.
 ## Scripts
 
 - `install-dotfiles.sh`: clone or update `https://github.com/kuranai/dotfiles.git`, back up conflicting files, and apply every GNU Stow package.
-- `install-all.sh`: run all setup scripts in order. For now, this only runs `install-dotfiles.sh`.
+- `install-numlock-boot.sh`: install `mkinitcpio-numlock`, add the `numlock` hook before `encrypt`, and rebuild initramfs so NumLock is enabled at boot password prompts.
+- `install-all.sh`: run all setup scripts in order.
 
 ## Usage
 
 ```sh
 ./install-dotfiles.sh
+```
+
+Enable NumLock during early boot password prompts:
+
+```sh
+./install-numlock-boot.sh
 ```
 
 To stow only selected packages:
