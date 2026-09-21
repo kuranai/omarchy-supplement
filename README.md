@@ -8,7 +8,7 @@ Run these after the base Omarchy install has completed.
 
 - `install-dotfiles.sh`: clone or update `https://github.com/kuranai/dotfiles.git`, back up conflicting files, and apply every GNU Stow package.
 - `install-numlock-boot.sh`: install `mkinitcpio-numlock`, add the `numlock` hook before `encrypt`, and rebuild initramfs so NumLock is enabled at boot password prompts.
-- `install-screensaver-mousemove.sh`: replace Omarchy's local `omarchy-cmd-screensaver` with the version that exits on keyboard or mouse input.
+- `install-screensaver-mousemove.sh`: install a user-owned screensaver renderer and launcher that exit on keyboard or mouse input, and wire them into Omarchy's idle service.
 - `install-all.sh`: run all setup scripts in order.
 
 ## Usage
@@ -28,6 +28,12 @@ Enable screensaver exit on mouse movement or click:
 ```sh
 ./install-screensaver-mousemove.sh
 ```
+
+On current Omarchy versions the script clones and customizes `omarchy.idle` in
+`~/.config/omarchy/` and installs a small user-owned PATH shim so both the idle
+service and `omarchy launch screensaver` use the mouse-aware renderer. It does
+not modify files owned by the Omarchy package. Rerun it after an Omarchy update
+if the screensaver implementation changes.
 
 To stow only selected packages:
 
