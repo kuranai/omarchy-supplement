@@ -3,6 +3,7 @@ set -euo pipefail
 
 PACKAGE="${PACKAGE:-mkinitcpio-numlock}"
 HOOKS_FILE="${HOOKS_FILE:-/etc/mkinitcpio.conf.d/omarchy_hooks.conf}"
+SDDM_CONFIG_FILE="${SDDM_CONFIG_FILE:-/etc/sddm.conf.d/99-omarchy-supplement-numlock.conf}"
 
 log() {
   printf '[install-numlock-boot] %s\n' "$*"
@@ -106,6 +107,29 @@ update_hooks_file() {
   rm -f "$tmp_file"
 }
 
+configure_sddm_numlock() {
+  local tmp_file
+
+  require_command sudo
+  require_command mktemp
+
+  tmp_file="$(mktemp)"
+  cat >"$tmp_file" <<'EOF'
+[General]
+Numlock=on
+EOF
+
+  if [[ -f "$SDDM_CONFIG_FILE" ]] && cmp -s "$tmp_file" "$SDDM_CONFIG_FILE"; then
+    log "$SDDM_CONFIG_FILE already enables Num Lock in SDDM"
+    rm -f "$tmp_file"
+    return
+  fi
+
+  log "Enabling Num Lock in the SDDM login greeter via $SDDM_CONFIG_FILE"
+  sudo install -D -m 0644 "$tmp_file" "$SDDM_CONFIG_FILE"
+  rm -f "$tmp_file"
+}
+
 rebuild_initramfs() {
   require_command sudo
   require_command mkinitcpio
@@ -117,6 +141,7 @@ rebuild_initramfs() {
 main() {
   install_package
   update_hooks_file
+  configure_sddm_numlock
   rebuild_initramfs
   log "Done"
 }
