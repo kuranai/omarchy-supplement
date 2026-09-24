@@ -4,6 +4,8 @@ set -euo pipefail
 PACKAGE="${PACKAGE:-mkinitcpio-numlock}"
 HOOKS_FILE="${HOOKS_FILE:-/etc/mkinitcpio.conf.d/omarchy_hooks.conf}"
 SDDM_CONFIG_FILE="${SDDM_CONFIG_FILE:-/etc/sddm.conf.d/99-omarchy-supplement-numlock.conf}"
+SDDM_SOURCE_CONFIG_FILE="${SDDM_SOURCE_CONFIG_FILE:-/usr/share/sddm/hyprland.lua}"
+SDDM_HYPRLAND_CONFIG_FILE="${SDDM_HYPRLAND_CONFIG_FILE:-/etc/sddm/hyprland.lua}"
 
 log() {
   printf '[install-numlock-boot] %s\n' "$*"
@@ -109,24 +111,50 @@ update_hooks_file() {
 
 configure_sddm_numlock() {
   local tmp_file
+  local source_config
 
   require_command sudo
   require_command mktemp
+  require_command cmp
+
+  [[ -f "$SDDM_SOURCE_CONFIG_FILE" ]] || fail "$SDDM_SOURCE_CONFIG_FILE does not exist"
+
+  source_config="$(mktemp)"
+  cat >"$source_config" <<EOF
+-- Load the packaged Omarchy SDDM greeter configuration first.
+dofile([[$SDDM_SOURCE_CONFIG_FILE]])
+
+-- Start with Num Lock enabled in the SDDM Wayland greeter.
+hl.config({
+  input = {
+    numlock_by_default = true,
+  },
+})
+EOF
 
   tmp_file="$(mktemp)"
-  cat >"$tmp_file" <<'EOF'
+  cat >"$tmp_file" <<EOF
 [General]
 Numlock=on
+
+[Wayland]
+CompositorCommand=start-hyprland -- --config $SDDM_HYPRLAND_CONFIG_FILE
 EOF
+
+  if [[ -f "$SDDM_HYPRLAND_CONFIG_FILE" ]] && cmp -s "$source_config" "$SDDM_HYPRLAND_CONFIG_FILE"; then
+    log "$SDDM_HYPRLAND_CONFIG_FILE already enables Num Lock in the SDDM Wayland greeter"
+  else
+    log "Enabling Num Lock in the SDDM Wayland greeter via $SDDM_HYPRLAND_CONFIG_FILE"
+    sudo install -D -m 0644 "$source_config" "$SDDM_HYPRLAND_CONFIG_FILE"
+  fi
+  rm -f "$source_config"
 
   if [[ -f "$SDDM_CONFIG_FILE" ]] && cmp -s "$tmp_file" "$SDDM_CONFIG_FILE"; then
     log "$SDDM_CONFIG_FILE already enables Num Lock in SDDM"
-    rm -f "$tmp_file"
-    return
+  else
+    log "Configuring SDDM to use the Num Lock-enabled Wayland greeter"
+    sudo install -D -m 0644 "$tmp_file" "$SDDM_CONFIG_FILE"
   fi
-
-  log "Enabling Num Lock in the SDDM login greeter via $SDDM_CONFIG_FILE"
-  sudo install -D -m 0644 "$tmp_file" "$SDDM_CONFIG_FILE"
   rm -f "$tmp_file"
 }
 
