@@ -7,7 +7,7 @@ Run these after the base Omarchy install has completed.
 ## Scripts
 
 - `install-dotfiles.sh`: clone or update `https://github.com/kuranai/dotfiles.git`, back up conflicting files, and apply every GNU Stow package.
-- `install-numlock-boot.sh`: install `mkinitcpio-numlock`, add the `numlock` hook before `encrypt`, configure SDDM and its Hyprland greeter to enable Num Lock, and rebuild initramfs.
+- `install-numlock-boot.sh`: install `mkinitcpio-numlock`, add the `numlock` hook before `encrypt`, configure SDDM to enable Num Lock, restore the Omarchy Plymouth theme, and rebuild the boot image.
 - `install-screensaver-mousemove.sh`: install a user-owned screensaver renderer and launcher that exit on keyboard or mouse input, and wire them into Omarchy's idle service.
 - `install-all.sh`: run all setup scripts in order.
 
@@ -25,12 +25,11 @@ Enable Num Lock during early boot password prompts and in the SDDM login greeter
 
 The initramfs hook controls Num Lock before the graphical login starts. The
 script writes `/etc/sddm.conf.d/99-omarchy-supplement-numlock.conf` with
-`Numlock=on` and points SDDM at `/etc/sddm/hyprland.lua`. That user-owned
-greeter wrapper loads Omarchy's packaged configuration and applies
-`input.numlock_by_default = true`, so it remains compatible with future
-Omarchy greeter updates. Restart the computer after running the script so
-SDDM reads the new setting. SDDM ignores the login-greeter setting when
-autologin is enabled.
+`Numlock=on`, restores the `omarchy` Plymouth theme, and rebuilds the boot
+image. On Omarchy systems it uses `limine-mkinitcpio` so the unified kernel
+image used by Limine is updated. Restart the computer after running the
+script so the new settings are used. SDDM ignores the login-greeter setting
+when autologin is enabled.
 
 Enable screensaver exit on mouse movement or click:
 
