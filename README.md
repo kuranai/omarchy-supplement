@@ -7,6 +7,7 @@ Run these after the base Omarchy install has completed.
 ## Scripts
 
 - `install-dotfiles.sh`: clone or update `https://github.com/kuranai/dotfiles.git`, back up conflicting files, and apply every GNU Stow package.
+- `install-terminal-font.sh`: set supported terminal configs to a readable 10pt font, back up changed files, and reload terminals.
 - `install-numlock-boot.sh`: install `mkinitcpio-numlock`, add the `numlock` hook before `encrypt`, configure SDDM to enable Num Lock, restore the Omarchy Plymouth theme, and rebuild the boot image.
 - `install-screensaver-mousemove.sh`: install a user-owned screensaver renderer and launcher that exit on keyboard or mouse input, and wire them into Omarchy's idle service.
 - `install-all.sh`: run all setup scripts in order.
@@ -16,6 +17,18 @@ Run these after the base Omarchy install has completed.
 ```sh
 ./install-dotfiles.sh
 ```
+
+Make the terminal font a little larger:
+
+```sh
+./install-terminal-font.sh
+```
+
+The default size is 10pt, up from Omarchy's 9pt default. Override it with
+`TERMINAL_FONT_SIZE`, for example `TERMINAL_FONT_SIZE=11 ./install-terminal-font.sh`.
+The script updates Alacritty, Foot, Ghostty, and Kitty configs when present,
+follows Stow symlinks, and stores backups under
+`$HOME/.local/state/omarchy-supplement/backups/`.
 
 Enable Num Lock during early boot password prompts and in the SDDM login greeter:
 
